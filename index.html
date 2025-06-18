@@ -1,0 +1,408 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Coming Soon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- GSAP library for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <style>
+      /* Root variables for consistent theming */
+      :root {
+        --primary: #667eea;
+        --secondary: #ff6b6b;
+        --dark: #2c3e50;
+        --light: #ffffff;
+      }
+
+      /* Reset default browser margins and paddings, and set box-sizing */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* Body styling: font, background, and text color */
+      body {
+        font-family: 'Montserrat', sans-serif;
+        background: black; /* Main page background */
+        color: var(--light);
+        overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+
+      /* Fixed background for the loader animation - this will be white */
+      .fixed-background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: white; /* White background for the loader */
+        z-index: 9998; /* One layer below the actual loader content */
+      }
+
+      /* Loader container - holds the logo and bar, transparent background */
+      .loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        color: black; /* Default text color for loader elements */
+        background-color: transparent; /* Main background is handled by .fixed-background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 9999; /* Highest z-index to be on top */
+      }
+
+      /* Loader logo styling (will be black) */
+      .loader-logo {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: black; /* Black text for the loader logo */
+      }
+
+      /* Loader bar container (background will be light black/gray) */
+      .loader-bar {
+        width: 200px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.3); /* Semi-transparent black for the bar track */
+        overflow: hidden;
+        border-radius: 2px;
+        position: relative;
+      }
+
+      /* Loader bar fill animation (will be black) */
+      .bar-fill {
+        width: 100%;
+        height: 100%;
+        background: black; /* Solid black for the moving fill */
+        transform: scaleX(0); /* Initially hidden */
+        transform-origin: left; /* Animation starts from the left */
+      }
+
+      /* Main content styling - initially hidden */
+      .main-content {
+        opacity: 0; /* Initially hidden */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* Container for main content, centered and with padding */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+        text-align: center;
+      }
+
+      /* Logo styling in the main content */
+      .logo {
+        font-size: 2rem;
+        font-weight: 800;
+      }
+
+      /* Main title styling with gradient text effect */
+      .title {
+        font-size: 3rem;
+        background: linear-gradient(to right, #ffffff, #ff6b6b);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent; /* Makes the text transparent to show gradient */
+        margin-top: 2rem;
+      }
+
+      /* Subtitle styling */
+      .subtitle {
+        font-size: 1.3rem;
+        margin: 1.2rem 0 3rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+      }
+
+      /* Subscribe form styling */
+      .subscribe-form {
+        display: flex;
+        max-width: 500px;
+        margin: 0 auto 3rem;
+        background: rgba(255, 255, 255, 0.1); /* Semi-transparent white background */
+        border-radius: 8px;
+        overflow: hidden;
+        backdrop-filter: blur(8px); /* Blur effect for the background */
+      }
+
+      /* Input field in the form */
+      .subscribe-form input {
+        flex: 1;
+        padding: 1rem;
+        border: none;
+        background: transparent;
+        color: white;
+        font-size: 1rem;
+      }
+
+      /* Button in the form */
+      .subscribe-form button {
+        padding: 1rem 2rem;
+        background-color: var(--secondary); /* Red background */
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease; /* Smooth hover effect */
+      }
+
+      /* Button hover effect */
+      .subscribe-form button:hover {
+        background-color: #ff5252;
+      }
+
+      /* Social links container */
+      .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 2rem; /* Space between links */
+        margin-bottom: 2rem;
+      }
+
+      /* Individual social link styling */
+      .social-link {
+        color: white;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+      }
+
+      /* Social link hover effect */
+      .social-link:hover {
+        color: var(--secondary);
+      }
+
+      /* Responsive adjustments for smaller screens */
+      @media (max-width: 768px) {
+        .title {
+          font-size: 2.2rem;
+        }
+
+        .subtitle {
+          font-size: 1rem;
+        }
+
+        .subscribe-form {
+          flex-direction: column; /* Stack form elements vertically */
+        }
+
+        .subscribe-form input,
+        .subscribe-form button {
+          border-radius: 0; /* Remove border radius for stacked elements */
+        }
+      }
+
+      /* Custom Message Box Styles */
+      .message-box-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.7);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 10000; /* Above everything */
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      .message-box {
+          background: white;
+          padding: 2rem;
+          border-radius: 8px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+          text-align: center;
+          color: var(--dark); /* Dark text for message box content */
+          max-width: 400px;
+          transform: translateY(-20px);
+          transition: transform 0.3s ease;
+      }
+
+      .message-box-overlay.show {
+          opacity: 1;
+          visibility: visible;
+      }
+
+      .message-box-overlay.show .message-box {
+          transform: translateY(0);
+      }
+
+      .message-box h3 {
+          margin-bottom: 1rem;
+          font-size: 1.5rem;
+      }
+
+      .message-box p {
+          margin-bottom: 1.5rem;
+          font-size: 1rem;
+      }
+
+      .message-box button {
+          padding: 0.8rem 1.5rem;
+          background-color: var(--secondary);
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+          transition: background-color 0.3s ease;
+      }
+
+      .message-box button:hover {
+          background-color: #ff5252;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Custom Message Box Structure -->
+    <div class="message-box-overlay" id="messageBoxOverlay">
+      <div class="message-box">
+        <h3 id="messageBoxTitle"></h3>
+        <p id="messageBoxContent"></p>
+        <button id="messageBoxClose">OK</button>
+      </div>
+    </div>
+
+    <!-- Fixed background element - for the white loader background -->
+    <div class="fixed-background"></div>
+
+    <!-- Loader container -->
+    <div class="loader">
+      <div class="loader-logo">SwipeStay</div>
+      <div class="loader-bar">
+        <div class="bar-fill"></div>
+      </div>
+    </div>
+
+    <!-- Main Content container -->
+    <div class="main-content">
+      <div class="container">
+        <div class="logo">SwipeStay</div>
+        <h1 class="title">we're cooking</h1>
+        <p class="subtitle">
+          We’re working hard to build something truly extraordinary. Sign up to get notified when we launch!
+        </p>
+
+<form class="subscribe-form" action="https://formsubmit.co/shubudubu1@gmail.com" method="POST">
+  <input type="hidden" name="_subject" value="New SwipeStay Subscriber!">
+  <input type="hidden" name="_captcha" value="false">
+  <input type="hidden" name="_template" value="table">
+  <input type="email" name="email" placeholder="Enter your email" required>
+  <button type="submit">Notify Me</button>
+</form>
+
+
+
+        <div class="social-links">
+          <a href="#" class="social-link">Twitter</a>
+          <a href="#" class="social-link">Instagram</a>
+          <a href="#" class="social-link">Facebook</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+      // Function to show custom message box
+      function showMessageBox(title, message) {
+        const overlay = document.getElementById('messageBoxOverlay');
+        document.getElementById('messageBoxTitle').innerText = title;
+        document.getElementById('messageBoxContent').innerText = message;
+        overlay.classList.add('show');
+      }
+
+      // Function to hide custom message box
+      function hideMessageBox() {
+        document.getElementById('messageBoxOverlay').classList.remove('show');
+      }
+
+      // Event listener for closing the message box
+      document.getElementById('messageBoxClose').addEventListener('click', hideMessageBox);
+
+
+      // GSAP Timeline for loader and content animation
+      window.addEventListener('load', () => {
+        const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+        // Bar fill animation
+        tl.to(".bar-fill", {
+          transform: "scaleX(1)",
+          duration: 1.6,
+        });
+
+        // Animate loader moving up and fading out
+        tl.to(".loader", {
+          y: "-100%", // Move loader completely upwards
+          opacity: 0,  // Fade it out
+          duration: 1,
+          ease: "power4.inOut",
+          onComplete: () => {
+            document.querySelector(".loader").style.display = "none";
+          }
+        });
+
+        // Animate fixed-background fading out (starts at the same time as loader movement)
+        tl.to(".fixed-background", {
+          opacity: 0,
+          duration: 1, // Match loader duration for smooth transition
+          ease: "power4.inOut",
+          onComplete: () => {
+            document.querySelector(".fixed-background").style.display = "none";
+          }
+        }, "<"); // Use "<" to start this animation at the same time as the previous one
+
+        // Reveal main content after loader transition
+        tl.to(".main-content", {
+          opacity: 1,
+          duration: 0.8
+        }, "-=0.6"); // Start slightly before the fixed-background finishes fading
+
+        // Animate main content elements in sequence
+        tl.from(".logo", { y: -40, opacity: 0, duration: 0.8 });
+        tl.from(".title", { y: 40, opacity: 0, duration: 0.8 }, "-=0.5");
+        tl.from(".subtitle", { y: 20, opacity: 0, duration: 0.8 }, "-=0.5");
+        tl.from(".subscribe-form", { y: 20, opacity: 0, duration: 0.8 }, "-=0.5");
+        tl.from(".social-links", { y: 20, opacity: 0, duration: 0.8 }, "-=0.5");
+      });
+
+      // Form submission handling
+      document.querySelector(".subscribe-form").addEventListener("submit", function(e) {
+        e.preventDefault(); // Prevent default form submission
+        const email = this.querySelector("input").value;
+
+        // Show custom message box instead of alert
+        showMessageBox('Thank You!', `Thanks for subscribing! We'll notify you at ${email}.`);
+
+        this.querySelector("input").value = ""; // Clear the input field
+
+        // Button animation on submit
+        gsap.to(".subscribe-form button", {
+          duration: 0.3,
+          scale: 0.95,
+          ease: "power1.inOut",
+          yoyo: true,
+          repeat: 1
+        });
+      });
+    </script>
+
+  </body>
+  </html>
