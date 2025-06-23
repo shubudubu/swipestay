@@ -1,25 +1,29 @@
-from flask import Flask, request, jsonify, render_template_string
-from datetime import datetime
+from flask import Flask, request, jsonify, render_template_string, send_file, abort
 import csv
 import os
 
 app = Flask(__name__)
 
-# CSV file to store emails
-EMAIL_FILE = "emails.csv"
-
-# Ensure the file exists with headers
-if not os.path.exists(EMAIL_FILE):
-    with open(EMAIL_FILE, "w", newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["Email", "Timestamp"])
-
+ADMIN_SECRET = os.environ.get("ADMIN_SECRET", "changeme123")  # Read from env, fallback for local
 
 @app.route("/")
-def index():
-    with open("templates/index.html") as f:
-        return f.read()
-from flask import send_file
+def home():
+    return render_template_string(open("templates/index.html").read())
+
+@app.route("/subscribe", methods=["POST"])
+def subscribe():
+    email = request.form.get("email")
+    if not email:
+        return jsonify({"message": "Email is required."}), 400
+
+    file_exists = os.path.exists("emails.csv")
+    with open("emails.csv", "a", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        if not file_exists:
+            writer.writerow(["Email"])
+        writer.writerow([email])
+
+    return jsonify({"message": f"We'll notify you at {email}."})
 
 @app.route("/download")
 def download_csv():
@@ -31,23 +35,6 @@ def download_csv():
         abort(404)
 
     return send_file("emails.csv", as_attachment=True)
-
-@app.route("/subscribe", methods=["POST"])
-def subscribe():
-    email = request.form.get("email")
-
-    if not email:
-        return jsonify({"message": "Invalid email"}), 400
-
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    try:
-        with open(EMAIL_FILE, "a", newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([email, timestamp])
-        return jsonify({"message": f"We'll notify you at {email}!"})
-    except Exception as e:
-        return jsonify({"message": "Server error: " + str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
