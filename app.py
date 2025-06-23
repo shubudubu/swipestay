@@ -19,6 +19,11 @@ if not os.path.exists(EMAIL_FILE):
 def index():
     with open("templates/index.html") as f:
         return f.read()
+from flask import send_file
+
+@app.route("/download")
+def download_csv():
+    return send_file("emails.csv", as_attachment=True)
 
 
 @app.route("/subscribe", methods=["POST"])
