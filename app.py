@@ -23,8 +23,14 @@ from flask import send_file
 
 @app.route("/download")
 def download_csv():
-    return send_file("emails.csv", as_attachment=True)
+    key = request.args.get("key")
+    if key != ADMIN_SECRET:
+        abort(403)  # Forbidden
 
+    if not os.path.exists("emails.csv"):
+        abort(404)
+
+    return send_file("emails.csv", as_attachment=True)
 
 @app.route("/subscribe", methods=["POST"])
 def subscribe():
